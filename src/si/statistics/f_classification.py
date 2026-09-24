@@ -1,0 +1,10 @@
+from typing import Tuple
+import numpy as np
+from scipy import stats
+from si.data.dataset import Dataset
+
+def f_classification(dataset: Dataset) -> Tuple[np.ndarray, np.ndarray]:
+    classes = dataset.get_classes()
+    groups = [dataset.X[dataset.y == c] for c in classes]
+    f_value, p_value = stats.f_oneway(*groups)
+    return f_value, p_value

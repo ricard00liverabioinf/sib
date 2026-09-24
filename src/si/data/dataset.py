@@ -126,6 +126,54 @@ class Dataset:
         }
         return pd.DataFrame.from_dict(data, orient="index", columns=self.features)
 
+    def to_dataframe(self) -> pd.DataFrame:
+        """
+        Converts the dataset to a pandas DataFrame
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        if self.y is None:
+            return pd.DataFrame(self.X, columns=self.features)
+        else:
+            df = pd.DataFrame(self.X, columns=self.features)
+            df[self.label] = self.y
+            return df
+
+    def dropna(self):
+        """Remove amostras que contenham pelo menos um valor nulo (NaN)."""
+        non_null_mask = ~np.isnan(self.X).any(axis=1)
+        self.X = self.X[non_null_mask]
+        if self.y is not None:
+            self.y = self.y[non_null_mask]
+        return self
+
+    def fillna(self, value):
+        """Substitui valores nulos (NaN) por um valor fixo, pela média ou pela mediana."""
+        for col_idx in range(self.X.shape[1]):
+            col = self.X[:, col_idx]
+            nan_mask = np.isnan(col)
+            
+            if np.any(nan_mask):
+                if value == "mean":
+                    fill_val = np.nanmean(col)
+                elif value == "median":
+                    fill_val = np.nanmedian(col)
+                else:
+                    fill_val = float(value)
+                    
+                self.X[nan_mask, col_idx] = fill_val
+                
+        return self
+
+    def remove_by_index(self, index: int):
+        """Remove uma amostra do dataset através do seu índice."""
+        self.X = np.delete(self.X, index, axis=0)
+        if self.y is not None:
+            self.y = np.delete(self.y, index, axis=0)
+        return self
+
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame, label: str = None):
         """
@@ -151,21 +199,6 @@ class Dataset:
 
         features = df.columns.tolist()
         return cls(X, y, features=features, label=label)
-
-    def to_dataframe(self) -> pd.DataFrame:
-        """
-        Converts the dataset to a pandas DataFrame
-
-        Returns
-        -------
-        pandas.DataFrame
-        """
-        if self.y is None:
-            return pd.DataFrame(self.X, columns=self.features)
-        else:
-            df = pd.DataFrame(self.X, columns=self.features)
-            df[self.label] = self.y
-            return df
 
     @classmethod
     def from_random(cls,
