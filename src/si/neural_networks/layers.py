@@ -68,9 +68,35 @@ class DenseLayer(Layer):
 
     def backward_propagation(self, output_error):
         """Propaga o erro para trás na camada densa."""
-        # Nota: Por agora, deixamos a estrutura base pronta para a próxima aula
-        return output_error
+        input_error = np.dot(output_error, self.weights.T)
+        self.grad_weights = np.dot(self.input.T, output_error)
+        self.grad_biases = np.sum(output_error, axis=0, keepdims=True)
+        return input_error
 
     def output_shape(self) -> tuple:
         """Retorna a forma da saída da camada."""
         return (self.n_units,)
+
+class ReLU(Layer):
+    """
+    Camada de ativação ReLU (Rectified Linear Unit).
+    """
+    def __init__(self):
+        self.input = None
+
+    def forward_propagation(self, input, training: bool = False):
+        """Aplica a função ReLU: max(0, input)."""
+        self.input = input
+        return np.maximum(0, input)
+
+    def backward_propagation(self, output_error):
+        """Propaga o erro através da derivada da ReLU."""
+        return output_error * (self.input > 0)
+
+    def output_shape(self) -> tuple:
+        """Retorna a forma da saída (igual à forma do input)."""
+        return self._input_shape
+
+    def parameters(self) -> int:
+        """Retorna o número de parâmetros (0 para a ReLU)."""
+        return 0
