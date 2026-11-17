@@ -19,7 +19,13 @@ class NeuralNetwork:
         self.optimizer = optimizer
         self.learning_rate = learning_rate
         self.verbose = verbose
-        self.loss = loss
+        
+        # Se a loss for passada como classe (ex: BinaryCrossEntropy), instanciamos-la
+        if isinstance(loss, type):
+            self.loss = loss()
+        else:
+            self.loss = loss
+            
         self.metric = metric
         self.kwargs = kwargs
         
